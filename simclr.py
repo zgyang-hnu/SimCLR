@@ -27,19 +27,19 @@ class SimCLR(object):
 
         labels = torch.cat([torch.arange(self.args.batch_size) for i in range(self.args.n_views)], dim=0)#生成一个n_views（N）batch_siz（B） 向量，实际也就是这么多样本的图片标签
         labels = (labels.unsqueeze(0) == labels.unsqueeze(1)).float()# 拥有同样Batch序号的，表示为同一图片的不同正例，其他为负样本
-                                                                     # 得到一个BN×BN的0 1矩阵，每行中的1表示某特定样本和其他样本互为正例
+                                                                     # 得到一个NB×NB的0 1矩阵，每行中的1表示某特定样本和其他样本互为正例
         labels = labels.to(self.args.device)
 
         features = F.normalize(features, dim=1)
 
-        similarity_matrix = torch.matmul(features, features.T)
+        similarity_matrix = torch.matmul(features, features.T)#NBxNB的 样本间相似度矩阵
         # assert similarity_matrix.shape == (
         #     self.args.n_views * self.args.batch_size, self.args.n_views * self.args.batch_size)
         # assert similarity_matrix.shape == labels.shape
 
         # discard the main diagonal from both: labels and similarities matrix
-        mask = torch.eye(labels.shape[0], dtype=torch.bool).to(self.args.device)
-        labels = labels[~mask].view(labels.shape[0], -1)
+        mask = torch.eye(labels.shape[0], dtype=torch.bool).to(self.args.device)#生成一个NBxNB对角矩阵,用于排除样本和自身之间的 正关联
+        labels = labels[~mask].view(labels.shape[0], -1)## 得到一个NB×NB的0 1矩阵，每行中的1表示某特定样本和其他样本互为正例，且自身关联的1被置0
         similarity_matrix = similarity_matrix[~mask].view(similarity_matrix.shape[0], -1)
         # assert similarity_matrix.shape == labels.shape
 
