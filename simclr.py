@@ -25,8 +25,9 @@ class SimCLR(object):
 
     def info_nce_loss(self, features):
 
-        labels = torch.cat([torch.arange(self.args.batch_size) for i in range(self.args.n_views)], dim=0)
-        labels = (labels.unsqueeze(0) == labels.unsqueeze(1)).float()
+        labels = torch.cat([torch.arange(self.args.batch_size) for i in range(self.args.n_views)], dim=0)#生成一个batch_siz *n_views 向量，实际也就是这么多样本的图片标签
+        labels = (labels.unsqueeze(0) == labels.unsqueeze(1)).float()# 拥有同样Batch序号的，表示为同一图片的不同正例，其他为负样本
+                                                                     # 得到一个BN×BN的0 1矩阵，每行中的1表示某特定样本和其他样本互为正例
         labels = labels.to(self.args.device)
 
         features = F.normalize(features, dim=1)
